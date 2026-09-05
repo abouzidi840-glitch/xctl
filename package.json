@@ -1,0 +1,18 @@
+{
+  "name": "xctl",
+  "version": "0.1.0",
+  "private": true,
+  "description": "X control terminal - dense dashboard for operating multiple X accounts via OAuth2 PKCE",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "jose": "^5.9.6",
+    "next": "^14.2.30",
+    "pg": "^8.13.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}
