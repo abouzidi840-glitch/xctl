@@ -9,6 +9,7 @@ import {
   SESSION_COOKIE,
   SESSION_MAX_AGE,
 } from "@/lib/session";
+import { notifyTelegram, telegramConfigured, fmtAccount } from "@/lib/telegram";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,12 @@ export async function GET(request) {
     account = await saveAuthorizedAccount(tokenData);
   } catch (err) {
     return fail(`Could not load your X profile: ${err.message}`);
+  }
+
+  if (telegramConfigured()) {
+    await notifyTelegram(
+      `✅ <b>Account connected</b>\n${fmtAccount(account)}\nScopes: ${account.scope.join(", ")}`
+    );
   }
 
   const sessionToken = await createSessionToken(account);

@@ -4,6 +4,7 @@ import { readSession } from "@/lib/session";
 import { listAccounts } from "@/lib/store";
 import Composer from "@/components/Composer";
 import DisconnectButton from "@/components/DisconnectButton";
+import RefreshButton from "@/components/RefreshButton";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,7 @@ export default async function HomePage() {
     avatarUrl: a.avatarUrl,
     scope: a.scope || [],
     createdAt: a.createdAt,
+    tokenExpiresAt: a.expiresAt || 0,
     isSessionUser: String(a.xUserId) === String(session.sub),
   }));
 
@@ -73,7 +75,10 @@ export default async function HomePage() {
                     {new Date(a.createdAt).toLocaleDateString()}
                   </div>
                 </div>
-                <DisconnectButton accountId={a.id} isSessionUser={a.isSessionUser} />
+                <div className="acc-actions">
+                  <RefreshButton accountId={a.id} tokenExpiresAt={a.tokenExpiresAt} />
+                  <DisconnectButton accountId={a.id} isSessionUser={a.isSessionUser} />
+                </div>
               </div>
             ))}
           </div>

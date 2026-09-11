@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { readSession, SESSION_COOKIE } from "@/lib/session";
 import { getAccountById, deleteAccountById } from "@/lib/store";
 import { revokeToken } from "@/lib/x";
+import { notifyTelegram, telegramConfigured, fmtAccount } from "@/lib/telegram";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,10 @@ export async function DELETE(_request, { params }) {
 
   const account = await getAccountById(params.id);
   if (!account) return NextResponse.json({ error: "not_found" }, { status: 404 });
+
+  if (telegramConfigured()) {
+    await notifyTelegram(`❌ <b>Account removed</b>\n${fmtAccount(account)}`);
+  }
 
   // Best effort remote revocation (uses the current access token).
   await revokeToken(account.accessToken);
