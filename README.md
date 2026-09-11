@@ -1,5 +1,3 @@
-v4b
-
 # XCTL · Twitter Control Terminal
 
 A self-hosted, multi-account X control surface in the style of apps like the one at

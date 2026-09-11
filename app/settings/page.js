@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { readSession } from "@/lib/session";
+import { readPanelSession } from "@/lib/panelauth";
 import { listAccounts } from "@/lib/store";
 import { getRedirectUri, getScopes } from "@/lib/xoauth";
 import DisconnectButton from "@/components/DisconnectButton";
@@ -11,8 +11,8 @@ const appName = () => process.env.NEXT_PUBLIC_APP_NAME || "XCTL · Twitter Contr
 const brandShort = () => appName().split("·")[0].trim();
 
 export default async function SettingsPage() {
-  const session = await readSession();
-  if (!session) redirect("/login");
+  const panel = await readPanelSession();
+  if (!panel) redirect("/login");
 
   const accounts = await listAccounts();
 
@@ -23,7 +23,7 @@ export default async function SettingsPage() {
         <nav className="nav">
           <Link href="/">Terminal</Link>
           <Link href="/settings" className="active">Settings</Link>
-          <a href="/api/auth/logout">Log out</a>
+          <a href="/api/panel/logout">Log out</a>
         </nav>
       </header>
 
@@ -36,7 +36,6 @@ export default async function SettingsPage() {
           <div className="empty">No accounts connected.</div>
         ) : (
           accounts.map((a) => {
-            const isSessionUser = String(a.xUserId) === String(session.sub);
             return (
               <div className="acc-row" key={a.id}>
                 {a.avatarUrl ? (
@@ -47,15 +46,14 @@ export default async function SettingsPage() {
                 )}
                 <div>
                   <div className="acc-name">
-                    {a.name} <span className="at">@{a.username}</span>{" "}
-                    {isSessionUser && <span className="badge">session</span>}
+                    {a.name} <span className="at">@{a.username}</span>
                   </div>
                   <div className="acc-meta">
                     token refresh {new Date(a.expiresAt).toLocaleString()} · scopes:{" "}
                     {(a.scope || []).join(", ")}
                   </div>
                 </div>
-                <DisconnectButton accountId={a.id} isSessionUser={isSessionUser} />
+                <DisconnectButton accountId={a.id} />
               </div>
             );
           })
@@ -68,16 +66,17 @@ export default async function SettingsPage() {
       </div>
 
       <div className="panel">
-        <h2>Session</h2>
+        <h2>Panel access</h2>
         <div className="row" style={{ gap: 8, alignItems: "center" }}>
           <span className="msg">Signed in as</span>
           <span>
-            {session.name} <span className="at muted">@{session.username}</span>
+            {panel.u} <span className="at muted">operator</span>
           </span>
         </div>
         <p className="msg small" style={{ marginTop: 10, lineHeight: 1.9 }}>
-          Admin session cookie expires 7 days after login. Logging out only clears the
-          local session; connected account tokens remain stored so you can sign back in.
+          The panel is protected by an operator login (username &amp; password).
+          Set PANEL_USER / PANEL_PASS environment variables in Vercel to change
+          the credentials. X account tokens stay stored until you disconnect them.
         </p>
       </div>
 

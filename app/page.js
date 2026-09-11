@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { readSession } from "@/lib/session";
+import { readPanelSession } from "@/lib/panelauth";
 import { listAccounts } from "@/lib/store";
 import Composer from "@/components/Composer";
 import DisconnectButton from "@/components/DisconnectButton";
@@ -12,8 +12,8 @@ const appName = () => process.env.NEXT_PUBLIC_APP_NAME || "XCTL · Twitter Contr
 const brandShort = () => appName().split("·")[0].trim();
 
 export default async function HomePage() {
-  const session = await readSession();
-  if (!session) redirect("/login");
+  const panel = await readPanelSession();
+  if (!panel) redirect("/login");
 
   const accounts = await listAccounts();
   const visible = accounts.map((a) => ({
@@ -25,7 +25,6 @@ export default async function HomePage() {
     scope: a.scope || [],
     createdAt: a.createdAt,
     tokenExpiresAt: a.expiresAt || 0,
-    isSessionUser: String(a.xUserId) === String(session.sub),
   }));
 
   return (
@@ -35,7 +34,7 @@ export default async function HomePage() {
         <nav className="nav">
           <Link href="/" className="active">Terminal</Link>
           <Link href="/settings">Settings</Link>
-          <a href="/api/auth/logout">Log out</a>
+          <a href="/api/panel/logout">Log out</a>
         </nav>
       </header>
 
@@ -57,6 +56,11 @@ export default async function HomePage() {
         <>
           <div className="panel">
             <h2><span className="count">{visible.length}</span> connected</h2>
+            <div style={{ margin: "10px 0 4px" }}>
+              <Link className="btn btn-acc" href="/api/auth/twitter" style={{ display: "inline-block" }}>
+                + Add X account
+              </Link>
+            </div>
             {visible.map((a) => (
               <div className="acc-row" key={a.id}>
                 {a.avatarUrl ? (
@@ -67,8 +71,7 @@ export default async function HomePage() {
                 )}
                 <div>
                   <div className="acc-name">
-                    {a.name} <span className="at">@{a.username}</span>{" "}
-                    {a.isSessionUser && <span className="badge">session</span>}
+                    {a.name} <span className="at">@{a.username}</span>
                   </div>
                   <div className="acc-meta">
                     {a.scope.includes("tweet.write") ? "write" : "read-only"} · connected{" "}
@@ -77,7 +80,7 @@ export default async function HomePage() {
                 </div>
                 <div className="acc-actions">
                   <RefreshButton accountId={a.id} tokenExpiresAt={a.tokenExpiresAt} />
-                  <DisconnectButton accountId={a.id} isSessionUser={a.isSessionUser} />
+                  <DisconnectButton accountId={a.id} />
                 </div>
               </div>
             ))}
@@ -91,7 +94,7 @@ export default async function HomePage() {
       )}
 
       <div className="foot">
-        Signed in as @{session.username} · session {new Date(session.exp * 1000).toLocaleDateString()}
+        Signed in as {panel.u} · panel session {new Date(panel.exp * 1000).toLocaleDateString()}
       </div>
     </div>
   );
