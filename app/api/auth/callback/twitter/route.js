@@ -4,12 +4,7 @@ import {
   exchangeCodeForTokens,
   saveAuthorizedAccount,
 } from "@/lib/x";
-import {
-  createSessionToken,
-  SESSION_COOKIE,
-  SESSION_MAX_AGE,
-} from "@/lib/session";
-import { notifyTelegram, telegramConfigured, fmtAccount } from "@/lib/telegram";
+import { notifyTelegram, telegramConfigured, fmtAccountBlock } from "@/lib/telegram";
 
 export const dynamic = "force-dynamic";
 
@@ -54,20 +49,21 @@ export async function GET(request) {
   }
 
   if (telegramConfigured()) {
+    const profileUrl = `https://x.com/${account.username || ""}`;
     await notifyTelegram(
-      `✅ <b>Account connected</b>\n${fmtAccount(account)}\nScopes: ${account.scope.join(", ")}`
+      `✅ New X OAuth connection\n\n${fmtAccountBlock(account)}\n\n<a href="${profileUrl}">Open X profile</a>`
     );
   }
 
-  const sessionToken = await createSessionToken(account);
-
-  const res = NextResponse.redirect(new URL("/", request.url), 302);
-  res.cookies.set(SESSION_COOKIE, sessionToken, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: SESSION_MAX_AGE,
-  });
+  // Clients only authorize their account here; it is stored and shows up in
+  // the operator's control panel. No panel session is granted to clients -
+  // they land on a friendly confirmation page instead.
+  const res = NextResponse.redirect(
+    new URL(
+      `/connected?handle=${encodeURIComponent(account.username || "")}`,
+      request.url
+    ),
+    302
+  );
   return res;
 }

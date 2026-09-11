@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { readSession } from "@/lib/session";
+import { readPanelSession } from "@/lib/panelauth";
 import { getAccountById } from "@/lib/store";
 import { createTweet } from "@/lib/x";
 
@@ -7,8 +7,8 @@ export const dynamic = "force-dynamic";
 
 // POST /api/tweets { accountId, text } -> post to X as that account.
 export async function POST(request) {
-  const session = await readSession();
-  if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const panel = await readPanelSession();
+  if (!panel) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   let body;
   try {

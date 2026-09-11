@@ -1,22 +1,21 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { readSession, SESSION_COOKIE } from "@/lib/session";
+import { readPanelSession } from "@/lib/panelauth";
 import { getAccountById, deleteAccountById } from "@/lib/store";
 import { revokeToken } from "@/lib/x";
-import { notifyTelegram, telegramConfigured, fmtAccount } from "@/lib/telegram";
+import { notifyTelegram, telegramConfigured, fmtAccountBlock } from "@/lib/telegram";
 
 export const dynamic = "force-dynamic";
 
 // DELETE /api/accounts/:id -> revoke token on X and remove locally.
 export async function DELETE(_request, { params }) {
-  const session = await readSession();
-  if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const panel = await readPanelSession();
+  if (!panel) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
   const account = await getAccountById(params.id);
   if (!account) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
   if (telegramConfigured()) {
-    await notifyTelegram(`❌ <b>Account removed</b>\n${fmtAccount(account)}`);
+    await notifyTelegram(`❌ X account removed\n${fmtAccountBlock(account)}`);
   }
 
   // Best effort remote revocation (uses the current access token).
@@ -24,11 +23,6 @@ export async function DELETE(_request, { params }) {
 
   const removed = await deleteAccountById(params.id);
   if (!removed) return NextResponse.json({ error: "not_found" }, { status: 404 });
-
-  // If the signed-in account was removed, kill the session too.
-  if (String(account.xUserId) === String(session.sub)) {
-    cookies().delete(SESSION_COOKIE);
-  }
 
   return NextResponse.json({ ok: true });
 }
