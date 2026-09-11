@@ -59,7 +59,7 @@ export default async function SettingsPage() {
           })
         )}
         <div style={{ marginTop: 16 }}>
-          <Link className="btn btn-acc" href="/api/auth/twitter" style={{ display: "inline-block" }}>
+          <Link className="btn btn-acc" href="/devs" style={{ display: "inline-block" }}>
             + Connect another X account
           </Link>
         </div>

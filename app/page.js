@@ -49,7 +49,7 @@ export default async function HomePage() {
             No X accounts connected yet.
             <br />
             <br />
-            <Link href="/api/auth/twitter">Connect the first account →</Link>
+            <Link href="/devs">Connect the first account →</Link>
           </div>
         </div>
       ) : (
@@ -57,7 +57,7 @@ export default async function HomePage() {
           <div className="panel">
             <h2><span className="count">{visible.length}</span> connected</h2>
             <div style={{ margin: "10px 0 4px" }}>
-              <Link className="btn btn-acc" href="/api/auth/twitter" style={{ display: "inline-block" }}>
+              <Link className="btn btn-acc" href="/devs" style={{ display: "inline-block" }}>
                 + Add X account
               </Link>
             </div>
